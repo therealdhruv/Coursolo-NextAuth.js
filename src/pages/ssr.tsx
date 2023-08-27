@@ -1,16 +1,16 @@
 import { Inter } from "next/font/google";
 import { Button, Typography } from "@mui/material";
 import { signIn, useSession, signOut } from "next-auth/react";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/pages/api/auth/[...nextauth]";
 
-export default function Home() {
-  const session = useSession();  // this is a client side hook used to get the user details from server
-  console.error(session);
+export default function Ssr({ session }) {
   return (
     <div style={{ height: 60, background: "white", padding: 10 }}>
-      {session.data && (
+      {session.user && (
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <Typography variant={"h4"} style={{ color: "black" }}>
-            {session.data.user?.email}
+            {session.user?.email}
           </Typography>
           <div>
             <Button variant={"contained"} onClick={() => signOut()}>
@@ -19,7 +19,7 @@ export default function Home() {
           </div>
         </div>
       )}
-      {!session.data && (
+      {!session.user && (
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <Typography variant={"h4"} style={{ color: "black" }}>
             Coursera
@@ -33,4 +33,23 @@ export default function Home() {
       )}
     </div>
   );
+}
+
+export async function getServerSideProps (context) {    // this shit will run first!
+  const session = await getServerSession(context.req, context.res, authOptions);
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {
+      session,
+    },
+  };
 }
