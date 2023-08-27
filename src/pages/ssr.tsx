@@ -49,7 +49,12 @@ export async function getServerSideProps (context) {    // this shit will run fi
 
   return {
     props: {
-      session,
+      session: {
+        user: {
+            name: "",
+            email: session.user?.email
+        }
+      }
     },
   };
 }
